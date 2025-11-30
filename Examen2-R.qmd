@@ -4,9 +4,10 @@ author: "Daniela Prado Vargas"
 format: html
 editor: visual
 ---
-Carga paquetes
+Carga paquetes y definir paleta para gráficos
 ```{r}
 library(tidyverse)
+paleta <- c("#FEEA08", "#203667", "#2957A4", "#9DD5E4", "#9A9899", "#6AB04A")
 ```
 
 1. Abrir tabla
@@ -45,11 +46,11 @@ moras %>%
 5. Imputación de valores faltates
 ```{r}
 conteo <- moras %>%
-  filter(!is.na(Tipo_Aseguramiento)) %>%
-  count(Tipo_Aseguramiento) %>%
+  filter(!is.na(TIPO_ASEGURAMIENTO)) %>%
+  count(TIPO_ASEGURAMIENTO) %>%
   arrange(desc(n))
 
-moda_tipo <- conteo$Tipo_Aseguramiento[1]          
+moda_tipo <- conteo$TIPO_ASEGURAMIENTO[1]          
 
 moras <- moras %>%
   mutate(
@@ -58,6 +59,52 @@ moras <- moras %>%
     TIPO_ASEGURAMIENTO = ifelse(is.na(TIPO_ASEGURAMIENTO), moda_tipo, TIPO_ASEGURAMIENTO)
     )
 ```
+6. Gráficos de cantidad de individuos por cada categoría
+
+```{r}
+# Tipo de Aseguramiento
+ggplot(moras, aes(x = TIPO_ASEGURAMIENTO)) +
+  geom_bar(fill = paleta[1:6]) +
+  labs(title = "Cantidad de individuos por Tipo de Aseguramiento",
+       x = "Tipo de Aseguramiento",
+       y = "Cantidad de personas") +
+  theme_minimal() +
+  coord_flip()
+
+# Sexo
+ggplot(moras, aes(x = SEXO)) +
+  geom_bar(fill = paleta[2:3]) +
+  labs(title = "Cantidad de individuos por Sexo",
+       x = "Sexo",
+       y = "Cantidad de personas") +
+  theme_minimal()
+
+# Sector
+ggplot(moras, aes(x = SECTOR)) +
+  geom_bar(fill = paleta[2:3]) +
+  labs(title = "Cantidad de individuos por Sector",
+       x = "Sector",
+       y = "Cantidad de personas") +
+  theme_minimal()
+
+# Activo seguro
+ggplot(moras, aes(x = INDICADOR_ACTIVO)) +
+  geom_bar(fill = paleta[2:3]) +
+  labs(title = "Cantidad de individuos según actividad del seguro",
+       x = "Seguro activo",
+       y = "Cantidad de personas") +
+  theme_minimal()
+
+# Extranjeros
+ggplot(moras, aes(x = INDICADOR.EXTRANJERO)) +
+  geom_bar(fill = paleta[2:3]) +
+  labs(title = "Cantidad de individuos por nacionalidad",
+       x = "Extranjeros",
+       y = "Cantidad de personas") +
+  theme_minimal()
+```
+
+
 
 
 
