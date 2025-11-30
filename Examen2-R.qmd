@@ -23,4 +23,17 @@ moras$SALARIO <- as.numeric(gsub(",", ".", moras$SALARIO))
 resumen <- summary(moras[sapply(moras, is.numeric)]) 
 resumen
 ```
+3. Identificar valores atípicos
+```{r}
+moras <- moras %>%
+  mutate(
+    Z_Salario = (SALARIO - mean(SALARIO, na.rm = TRUE)) / sd(SALARIO, na.rm = TRUE),
+    Outlier_Salario = ifelse(abs(Z_Salario) > 1.96, "Sí", "No"),
+    
+    Z_Edad = (EDAD - mean(EDAD, na.rm = TRUE)) / sd(EDAD, na.rm = TRUE),
+    Outlier_Edad = ifelse(abs(Z_Edad) > 1.96, "Sí", "No")
+  )
+```
+
+
 
