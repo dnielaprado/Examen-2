@@ -1,0 +1,15 @@
+---
+title: "Examen2-R"
+author: "Daniela Prado Vargas"
+format: html
+editor: visual
+---
+
+Abrir tabla
+```{r}
+moras <- read.table("C:/Users/danie/OneDrive/Escritorio/examen2/moras.txt",
+                       header = TRUE,
+                       sep = ",",
+                       stringsAsFactors = FALSE)
+```
+
