@@ -4,12 +4,23 @@ author: "Daniela Prado Vargas"
 format: html
 editor: visual
 ---
+Carga paquetes
+```{r}
+library(tidyverse)
+```
 
-Abrir tabla
+1. Abrir tabla
 ```{r}
 moras <- read.table("C:/Users/danie/OneDrive/Escritorio/examen2/moras.txt",
                        header = TRUE,
                        sep = ",",
                        stringsAsFactors = FALSE)
+```
+
+2. Resumen de las variables numéricas
+```{r}
+moras$SALARIO <- as.numeric(gsub(",", ".", moras$SALARIO))
+resumen <- summary(moras[sapply(moras, is.numeric)]) 
+resumen
 ```
 
