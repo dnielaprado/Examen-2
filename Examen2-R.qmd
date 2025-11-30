@@ -35,5 +35,13 @@ moras <- moras %>%
   )
 ```
 
+4. Detección de valores faltantes por colummna
+```{r}
+moras$TIPO_ASEGURAMIENTO <- na_if(trimws(moras$TIPO_ASEGURAMIENTO), "")
+#De excel se detectó que aquí habían NA y al hacer el cálculo de porcentajes salía cero. Al revisar de forma manual me di cuenta que había como un "espacio", por lo que R no lo tomaba como NA.
+moras %>%
+  summarise(across(everything(), ~mean(is.na(.)) * 100))
+```
+
 
 
