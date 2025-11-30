@@ -60,7 +60,6 @@ moras <- moras %>%
     )
 ```
 6. Gráficos de cantidad de individuos por cada categoría
-
 ```{r}
 # Tipo de Aseguramiento
 ggplot(moras, aes(x = TIPO_ASEGURAMIENTO)) +
@@ -102,6 +101,54 @@ ggplot(moras, aes(x = INDICADOR.EXTRANJERO)) +
        x = "Extranjeros",
        y = "Cantidad de personas") +
   theme_minimal()
+```
+7. Porcentaje de morosos por clase
+```{r}
+resumen_morosos <- function(df, variable) {
+  df %>%
+    group_by(.data[[variable]]) %>%
+    summarise(
+      TOTAL = n(),
+      MOROSOS = sum(INDICADOR_MOROSO == "SI"),
+      PORCENTAJE = round((MOROSOS / TOTAL) * 100, 2)
+    ) %>%
+    rename(CATEGORIA = .data[[variable]])
+}
+
+grafico_morosos <- function(df, variable) {
+  datos <- resumen_morosos(df, variable)
+  
+  if(variable == "TIPO_ASEGURAMIENTO") {
+    abrev <- c(
+      "ASALARIADO" = "ASALARIADO",
+      "PENSIONADOS EN SU PROPIO SISTEMA" = "PENSIONADOS",
+      "ASEGURADO VOLUNTARIO" = "VOLUNTARIOS",
+      "TRABAJADOR INDEPENDIENTE" = "INDEPENDIENTE",
+      "CONVENIOS ESPECIALES DE TRABAJADORES INDEPENDIENTES" = "CONV. ESP. INDEPENDIENTES",
+      "CONVENIOS ESPECIALES DE ASEGURADOS VOLUNTARIOS" = "CONV. ESP. VOLUNTARIOS"
+    )
+    datos$CATEGORIA <- abrev[datos$CATEGORIA]
+  }
+  
+  ggplot(datos, aes(x = CATEGORIA, y = PORCENTAJE, fill = CATEGORIA)) +
+    geom_col() +
+    coord_flip() +
+    scale_fill_manual(values = paleta) +
+    theme_minimal(base_size = 13) +
+    theme(
+      legend.position = "none",
+      plot.title = element_text(size = 14, hjust = 0.5, margin = margin(b = 10))
+    ) +
+    labs(title = paste("Porcentaje de morosos por", variable),
+         x = "",
+         y = "Procentaje de Morosos")
+}
+
+grafico_morosos(moras, "TIPO_ASEGURAMIENTO")
+grafico_morosos(moras, "SEXO")
+grafico_morosos(moras, "SECTOR")
+grafico_morosos(moras, "INDICADOR_ACTIVO")
+grafico_morosos(moras, "INDICADOR.EXTRANJERO")
 ```
 
 
