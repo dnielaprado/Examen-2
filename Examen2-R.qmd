@@ -42,6 +42,22 @@ moras$TIPO_ASEGURAMIENTO <- na_if(trimws(moras$TIPO_ASEGURAMIENTO), "")
 moras %>%
   summarise(across(everything(), ~mean(is.na(.)) * 100))
 ```
+5. Imputación de valores faltates
+```{r}
+conteo <- moras %>%
+  filter(!is.na(Tipo_Aseguramiento)) %>%
+  count(Tipo_Aseguramiento) %>%
+  arrange(desc(n))
+
+moda_tipo <- conteo$Tipo_Aseguramiento[1]          
+
+moras <- moras %>%
+  mutate(
+    SALARIO = ifelse(is.na(SALARIO), mean(SALARIO, na.rm = TRUE), SALARIO),
+    EDAD = ifelse(is.na(EDAD), mean(EDAD, na.rm = TRUE), EDAD),
+    TIPO_ASEGURAMIENTO = ifelse(is.na(TIPO_ASEGURAMIENTO), moda_tipo, TIPO_ASEGURAMIENTO)
+    )
+```
 
 
 
