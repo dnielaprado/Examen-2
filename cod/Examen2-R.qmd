@@ -1,8 +1,10 @@
 ---
 title: "Examen2-R"
 author: "Daniela Prado Vargas"
-format: html
-editor: visual
+format:
+  html:
+    theme: materia
+    self-contained: true
 ---
 Carga paquetes y definir paleta para gráficos
 ```{r}
