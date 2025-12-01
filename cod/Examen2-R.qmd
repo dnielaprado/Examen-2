@@ -14,10 +14,9 @@ paleta <- c("#FEEA08", "#203667", "#2957A4", "#9DD5E4", "#9A9899", "#6AB04A")
 
 ## 1. Abrir tabla
 ```{r}
-moras <- read.table("C:/Users/danie/OneDrive/Escritorio/examen2/moras.txt",
-                       header = TRUE,
-                       sep = ",",
-                       stringsAsFactors = FALSE)
+moras <- read.csv("moras.txt", 
+                  header = TRUE, 
+                  stringsAsFactors = FALSE)
 ```
 
 ## 2. Resumen de las variables numéricas
@@ -255,13 +254,29 @@ Salario y morosidad: En el gráfico que muestra la cantidad de morosos por rango
 
 ## 10. Arbol 
 ```{r}
+library(dplyr)
 library(rpart)
 library(rpart.plot)
 
-arbol <- rpart(INDICADOR_MOROSO ~ ., data = moras)
+# Renombrar categorías y eliminar identificador
+df_arbol <- moras %>%
+  mutate(
+    TIPO_ASEGURAMIENTO = recode(
+      TIPO_ASEGURAMIENTO,
+      "PENSIONADOS EN SU PROPIO SISTEMA" = "PENSIONADOS",
+      "ASEGURADO VOLUNTARIO" = "VOLUNTARIO",
+      "TRABAJADOR INDEPENDIENTE" = "INDEPENDIENTE",
+      "CONVENIOS ESPECIALES DE TRABAJADORES INDEPENDIENTES" = "CONV_INDEP",
+      "CONVENIOS ESPECIALES DE ASEGURADOS VOLUNTARIOS" = "CONV_VOL"
+    )
+  ) %>%
+  select(-IDENTIFICACION)
 
-rpart.plot(arbol)
+# Construir árbol
+arbol <- rpart(INDICADOR_MOROSO ~ ., data = df_arbol, method = "class")
 
+# Graficar árbol
+rpart.plot(arbol, type = 2, extra = 104, fallen.leaves = TRUE, faclen = 8)
 ```
 El árbol nos muestra que la variable que más influencia tiene sobre la morosidad es el tipo de aseguramiento. Las personas con aseguramiento tradicional (asalariados, voluntarios y pensionados) tienden a ser menos morosas. En cambio, dentro del grupo que no pertenece a estas categorías, ser extranjero aparece como el factor más relevante: los extranjeros presentan los niveles más altos de morosidad en toda la base. Por otro lado, entre quienes no son extranjeros, el salario marca otra división importante: quienes ganan más de ₡304 000 muestran un riesgo mayor de morosidad, probablemente porque tienen más compromisos financieros. En resumen, el modelo indica que las características laborales, la condición de extranjero y el nivel de ingresos son claves para identificar los perfiles con mayor probabilidad de ser morosos, ofreciendo así información útil para tomar decisiones más informadas.
 
