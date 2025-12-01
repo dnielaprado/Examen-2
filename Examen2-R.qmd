@@ -10,7 +10,7 @@ library(tidyverse)
 paleta <- c("#FEEA08", "#203667", "#2957A4", "#9DD5E4", "#9A9899", "#6AB04A")
 ```
 
-1. Abrir tabla
+## 1. Abrir tabla
 ```{r}
 moras <- read.table("C:/Users/danie/OneDrive/Escritorio/examen2/moras.txt",
                        header = TRUE,
@@ -18,13 +18,13 @@ moras <- read.table("C:/Users/danie/OneDrive/Escritorio/examen2/moras.txt",
                        stringsAsFactors = FALSE)
 ```
 
-2. Resumen de las variables numéricas
+## 2. Resumen de las variables numéricas
 ```{r}
 moras$SALARIO <- as.numeric(gsub(",", ".", moras$SALARIO))
 resumen <- summary(moras[sapply(moras, is.numeric)]) 
 resumen
 ```
-3. Identificar valores atípicos
+## 3. Identificar valores atípicos
 ```{r}
 moras <- moras %>%
   mutate(
@@ -36,14 +36,14 @@ moras <- moras %>%
   )
 ```
 
-4. Detección de valores faltantes por colummna
+## 4. Detección de valores faltantes por colummna
 ```{r}
 moras$TIPO_ASEGURAMIENTO <- na_if(trimws(moras$TIPO_ASEGURAMIENTO), "")
 #De excel se detectó que aquí habían NA y al hacer el cálculo de porcentajes salía cero. Al revisar de forma manual me di cuenta que había como un "espacio", por lo que R no lo tomaba como NA.
 moras %>%
   summarise(across(everything(), ~mean(is.na(.)) * 100))
 ```
-5. Imputación de valores faltates
+## 5. Imputación de valores faltates
 ```{r}
 conteo <- moras %>%
   filter(!is.na(TIPO_ASEGURAMIENTO)) %>%
@@ -59,10 +59,22 @@ moras <- moras %>%
     TIPO_ASEGURAMIENTO = ifelse(is.na(TIPO_ASEGURAMIENTO), moda_tipo, TIPO_ASEGURAMIENTO)
     )
 ```
-6. Gráficos de cantidad de individuos por cada categoría
+
+## 6. Gráficos de cantidad de individuos por cada categoría
 ```{r}
+moras <- moras %>%
+  mutate(TIPO_ASEG_ABREV = case_when(
+    TIPO_ASEGURAMIENTO == "TRABAJADOR INDEPENDIENTE" ~ "Independiente",
+    TIPO_ASEGURAMIENTO == "PENSIONADOS EN SU PROPIO SISTEMA" ~ "Pensionado",
+    TIPO_ASEGURAMIENTO == "ASALARIADO" ~ "Asalariado",
+    TIPO_ASEGURAMIENTO == "CONVENIOS ESPECIALES DE ASEGURADOS VOLUNTARIOS" ~ "Voluntario Aseg.",
+    TIPO_ASEGURAMIENTO == "CONVENIOS ESPECIALES DE TRABAJADORES INDEPENDIENTES" ~ "Voluntario Indep.",
+    TIPO_ASEGURAMIENTO == "ASEGURADO VOLUNTARIO" ~ "Voluntario",
+    TRUE ~ as.character(TIPO_ASEGURAMIENTO)
+  ))
+
 # Tipo de Aseguramiento
-ggplot(moras, aes(x = TIPO_ASEGURAMIENTO)) +
+ggplot(moras, aes(x = TIPO_ASEG_ABREV)) +
   geom_bar(fill = paleta[1:6]) +
   labs(title = "Cantidad de individuos por Tipo de Aseguramiento",
        x = "Tipo de Aseguramiento",
@@ -101,8 +113,32 @@ ggplot(moras, aes(x = INDICADOR.EXTRANJERO)) +
        x = "Extranjeros",
        y = "Cantidad de personas") +
   theme_minimal()
+
+#Morosos
+ggplot(moras, aes(x = INDICADOR_MOROSO)) +
+  geom_bar(fill = paleta[2:3]) +
+  labs(title = "Cantidad de individuos morosos",
+       x = "Morosos",
+       y = "Cantidad de personas") +
+  theme_minimal()
+
 ```
-7. Porcentaje de morosos por clase
+Análisis de los gráficos(mismo que en excel):
+
+Tipo de aseguramiento: En el gráfico se observa la distribución de la población según su régimen laboral. La mayoría de las personas son asalariadas, con casi 3,500 individuos, lo que representa la categoría predominante. Los trabajadores independientes constituyen la segunda categoría más frecuente, con poco más de 500 personas. Las demás categorías, como pensionados en su propio sistema, asegurados voluntarios y personas con beneficios especiales, presentan cantidades significativamente menores, lo que indica que son minoritarias dentro de la muestra. Esto refleja que la población está concentrada principalmente en el empleo asalariado.
+
+Sexo: El gráfico muestra la distribución de las personas según su sexo. Se observa que hay aproximadamente 3.000 hombres y 2.000 mujeres en el conjunto de datos.
+
+Sector: En el gráfico se observa la distribución de la población según el sector laboral. La mayoría de las personas pertenecen al sector privado, con un poco menos de 4,000 individuos, mientras que el sector público cuenta con poco más de 1,000 personas. Esto indica que el empleo se concentra principalmente en el sector privado, siendo el sector público significativamente menor dentro de la muestra.
+
+Actividad: En el gráfico se observa la distribución de la población según la activación del seguro. La gran mayoría de las personas, casi 5,000, tienen el seguro activo, mientras que un número muy reducido, menos de 100, no lo tienen activo. Esta información se corrobora con la tabla, que indica que solo 34 individuos no cuentan con el seguro activo. Esto refleja que prácticamente toda la población tiene el seguro en funcionamiento.
+
+Nacionaliadad: En el gráfico se observa la distribución de la población según su nacionalidad. La gran mayoría de las personas son nacionales, con casi 4,500 individuos, mientras que las personas extranjeras representan una minoría, con un poco más de 500. Esto indica que la población está predominantemente compuesta por nacionales.
+
+Morosos: En el gráfico se observa la distribución de la población según su estado de morosidad. La mayoría de las personas, con más de 4,000 individuos, no presentan morosidad, mientras que menos de 1,000 personas se encuentran morosas. Esto indica que la mayor parte de la población mantiene sus obligaciones al día, y solo una minoría presenta atrasos o deudas pendientes.
+
+
+## 7. Porcentaje de morosos por clase
 ```{r}
 resumen_morosos <- function(df, variable) {
   df %>%
@@ -150,7 +186,20 @@ grafico_morosos(moras, "SECTOR")
 grafico_morosos(moras, "INDICADOR_ACTIVO")
 grafico_morosos(moras, "INDICADOR.EXTRANJERO")
 ```
-8. Morosos para variables numéricas
+Análisis de los gráficos:
+
+Tipo de aseguramiento: En el gráfico del porcentaje de morosos por tipo de aseguramiento se observa que los convenios especiales de asegurados voluntarios y los pensionados en su propio sistema presentan un 0% de morosidad, indicando que ninguna persona en estas categorías se encuentra morosa. Por otro lado, los trabajadores independientes muestran el porcentaje más alto de morosidad, con un 56%, mientras que los asegurados voluntarios tienen un 13%. Esto indica que la morosidad se concentra principalmente entre los trabajadores independientes, siendo mucho menor en las demás categorías.
+
+Sexo: En el gráfico se observa el porcentaje de morosos según el sexo. Menos del 17% de las mujeres presentan morosidad, mientras que casi un 18% de los hombres se encuentran en esta situación. Esto indica que la proporción de morosos es ligeramente mayor entre los hombres, aunque la diferencia con respecto a las mujeres es mínima.
+
+Sector: En el gráfico del porcentaje de morosos por sector se observa que el 18% de las personas en el sector privado son morosas, mientras que en el sector público la proporción es menor, con un 15%. Esto indica que, aunque la morosidad existe en ambos sectores, es ligeramente más alta en el sector privado.
+
+Indicador activo: En el gráfico que muestra la morosidad según la activación del seguro, se observa que el 17% de las personas con el seguro activo presentan morosidad, mientras que el 52% de quienes no tienen el seguro activo son morosos. Esto indica que, en esta muestra, la morosidad es mayor entre quienes no tienen activo el seguro, mientras que quienes sí lo tienen activo presentan un porcentaje relativamente bajo de morosidad.
+
+Extranjero: En el gráfico que muestra la morosidad según la nacionalidad, se observa que entre las personas extranjeras, el 24% son morosos, mientras que entre las personas nacionales, la proporción de morosos es menor, con un 16%. Esto indica que la morosidad es más alta entre los extranjeros que entre los nacionales en esta muestra.
+
+
+## 8. Morosos para variables numéricas
 ```{r}
 moras <- moras %>%
   mutate(
@@ -196,8 +245,22 @@ ggplot(moras, aes(x = SALARIO_RANGO, fill = INDICADOR_MOROSO)) +
        fill = "Moroso") +
   theme_minimal()
 ```
+Análisis de gráficos:
 
+Edad y morosidad: En el gráfico que muestra la cantidad de morosos por rango de edad se observa que la mayor cantidad de personas morosas se encuentra en el rango de 36 a 45 años, con 254 individuos. Por otro lado, el rango con menos morosos es de 46 a 55 años, con 212 personas. Los rangos de 26 a 35 años y 56+ presentan 242 y 162 morosos, respectivamente. Esto indica que, dentro de la muestra, la morosidad tiende a concentrarse más en la edad media-adulta (36-45), mientras que las edades más jóvenes y las mayores muestran menores cantidades de morosidad.
 
+Salario y morosidad: En el gráfico que muestra la cantidad de morosos por rango de salario se observa que la mayor cantidad de personas morosas se concentra en el rango más bajo, de 0 a 500.000, con 605 morosos. En los rangos intermedios, 500.001-1.000.000 y 1.000.001-5.000.000, hay 178 y 86 morosos respectivamente, mostrando que la morosidad disminuye a medida que aumenta el salario. Finalmente, en el rango más alto, 5.000.001-16.858.742, hay solo 1 moroso, lo que indica que la morosidad es prácticamente nula entre los salarios más altos. Esto refleja que la morosidad está fuertemente asociada con los ingresos más bajos.
 
+## 10. Arbol 
+```{r}
+library(rpart)
+library(rpart.plot)
+
+arbol <- rpart(INDICADOR_MOROSO ~ ., data = moras)
+
+rpart.plot(arbol)
+
+```
+El árbol nos muestra que la variable que más influencia tiene sobre la morosidad es el tipo de aseguramiento. Las personas con aseguramiento tradicional (asalariados, voluntarios y pensionados) tienden a ser menos morosas. En cambio, dentro del grupo que no pertenece a estas categorías, ser extranjero aparece como el factor más relevante: los extranjeros presentan los niveles más altos de morosidad en toda la base. Por otro lado, entre quienes no son extranjeros, el salario marca otra división importante: quienes ganan más de ₡304 000 muestran un riesgo mayor de morosidad, probablemente porque tienen más compromisos financieros. En resumen, el modelo indica que las características laborales, la condición de extranjero y el nivel de ingresos son claves para identificar los perfiles con mayor probabilidad de ser morosos, ofreciendo así información útil para tomar decisiones más informadas.
 
 
